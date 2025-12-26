@@ -1,0 +1,111 @@
+# === Paths ===
+watch_folder: "C:/Users/FSOS/Documents/Stuffs/Transcription/input"           # your OBS Recording Path
+output_root:  "C:/Users/FSOS/Documents/Stuffs/Transcription/output"
+
+# === Audio/FFmpeg ===
+ffmpeg_path: "ffmpeg"     # full path if ffmpeg isn't on PATH
+audio_format: "wav"       # we create 16k mono PCM WAV for STT/diarization
+
+# === Watcher file types (extensions) ===
+# Add or remove extensions you want the watcher to process.
+# Values may include or omit the leading dot; matching is case-insensitive.
+watch_extensions:
+  # video
+  - .mkv
+  - .mp4
+  - .mov
+  - .webm
+  # audio
+  - .wav
+  - .mp3
+  - .m4a
+  - .aac
+  - .flac
+  - .ogg
+  - .opus
+  - .wma
+
+# === Whisper ASR ===
+whisper_model: "base"     # tiny | base | small | medium | large
+language: "id"            # "id" for Bahasa Indonesia; set null to auto-detect
+
+# === Gemini (summary) ===
+gemini_model: "gemini-2.5-pro"
+summary_prompt: |
+  Anda adalah asisten akademik yang merangkum rapat/perkuliahan kampus.
+  Pada baris pertama, tulis metadata berikut:
+  **Dibuat:** {{NOW_WIB}}  (zona waktu: WIB, UTC+07:00)
+
+  # Output
+  - Bahasa: Indonesia.
+  - Format: Markdown dengan heading & bullet.
+  - Gunakan format tanggal ISO 8601 (YYYY-MM-DD) dan jam 24 jam.
+  - Konversikan tanggal relatif menjadi tanggal absolut di zona waktu Asia/Jakarta (WIB).
+  - Jika informasi penting tidak disebutkan, tulis "(tidak disebutkan)".
+
+  # Struktur
+  ## Identitas Sesi
+  - Mata kuliah / Kelas:
+  - Pertemuan ke- / Topik resmi:
+  - Tanggal & waktu:
+  - Dosen / Asisten:
+  - Peserta/kohort (opsional):
+
+  ## Materi yang Dibahas
+  - Ringkas poin inti per topik (1–3 kalimat/topik), sertakan konsep/rumus/contoh.
+  - Cantumkan referensi/slides/paper/link bila disebut.
+
+  ## Catatan Dosen & Pengumuman
+  - Aturan baru, perubahan jadwal, info ujian/kuis, dsb.
+
+  ## Tugas/PR & Proyek (format tabel)
+  | Tugas | Penanggung jawab | Sumber/Link | Batas waktu (YYYY-MM-DD) | Kriteria/Instruksi singkat |
+  |---|---|---|---|---|
+
+  ## Deadline Mendatang (urut kronologis)
+  - Tanggal absolut + konteks mata kuliah.
+
+  ## Pertanyaan Terbuka & Klarifikasi
+  - Hal yang belum jelas atau keputusan tertunda.
+
+  ## Saran Belajar & Persiapan Sesi Berikutnya
+  - Bacaan/praktik yang disarankan; fokus materi selanjutnya.
+
+  ## Catatan Samping (Side Notes)
+  - Insight kecil, contoh menarik, tips praktis.
+
+  # Instruksi pemrosesan
+  - Gunakan transkrip apa adanya; jangan mengarang hal yang tidak disebutkan.
+  - Normalisasi istilah teknis (beri istilah Inggris dalam kurung jika relevan).
+  - Abaikan ID pembicara mentah seperti [SPEAKER_00]; gunakan "Dosen"/"Mahasiswa" bila jelas.
+  - Target panjang ~ 300–600 kata (kecuali materi sangat padat).
+
+# (optional) Put keys here instead of env vars (leave blank to use env)
+gemini_api_key: ""
+hf_token_value: ""
+
+# === Gemini error handling ===
+# Retries and interactive prompt when Gemini API fails
+gemini_max_retries: 3           # how many attempts before prompting
+gemini_retry_delay_sec: 60      # seconds between attempts
+gemini_prompt_on_fail: true     # after retries, prompt to retry/switch/cancel
+
+# Options shown when choosing to switch Gemini model after failures
+gemini_fallback_models:
+  - gemini-2.5-flash
+  - gemini-2.5-flash-lite
+
+# === Diarization (pyannote) ===
+enable_diarization: true
+pyannote_pipeline: "pyannote/speaker-diarization-3.1"
+hf_token_env: "HF_TOKEN"   # name of env var to read if hf_token_value is empty
+
+# === Output organization ===
+date_folders: true         # output\YYYY\YYYY-MM-DD\...
+
+# === Misc ===
+suppress_pooling_warning: true
+
+# === Dedupe / idempotency ===
+skip_if_processed: true
+dedupe_cache_dir: "C:/Users/FSOS/Documents/Stuffs/Transcription/output/.cache"  # where we store fingerprints
